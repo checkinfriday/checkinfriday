@@ -133,11 +133,13 @@
   window.addEventListener("DOMContentLoaded", carregarAlunos);
 
   function carregarAlunos() {
+    // Requisição GET para carregar alunos (não requer preflight CORS)
     fetch(`${ENDPOINT}?action=alunos&token=${TOKEN}`)
       .then(r => r.json())
       .then(data => {
         if (data.erro) {
           document.getElementById("aluno").innerHTML = "<option>Erro ao carregar</option>";
+          console.error("Erro ao carregar alunos:", data.erro);
           return;
         }
         const select = document.getElementById("aluno");
@@ -175,10 +177,16 @@
     loading.style.display = "block";
     msgDiv.style.display = "none";
 
-    fetch(`${ENDPOINT}?token=${TOKEN}`, {
+    // Requisição POST com application/x-www-form-urlencoded (não requer preflight CORS)
+    const params = new URLSearchParams();
+    params.append("token", TOKEN);
+    params.append("aluno", aluno);
+    params.append("horario", horario);
+
+    fetch(ENDPOINT, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ aluno, horario })
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: params.toString()
     })
       .then(r => r.json())
       .then(data => {
