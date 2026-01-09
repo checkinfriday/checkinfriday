@@ -62,18 +62,25 @@ function checkin() {
     return;
   }
 
+  const payload = JSON.stringify({ aluno, horario });
+
+  // Removendo o header Content-Type para evitar erro de CORS/Preflight
   fetch(`${ENDPOINT}?token=${TOKEN}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ aluno, horario })
+    body: payload 
   })
   .then(r => r.json())
   .then(data => {
-    document.getElementById("msg").innerText =
-      data.ok ? "Presença registrada!" : data.erro;
+    if (data.ok) {
+      document.getElementById("msg").innerText = "Presença registrada!";
+      document.getElementById("msg").style.color = "green";
+    } else {
+      document.getElementById("msg").innerText = "Erro: " + data.erro;
+    }
   })
-  .catch(() => {
-    document.getElementById("msg").innerText = "Erro no envio";
+  .catch(err => {
+    console.error(err);
+    document.getElementById("msg").innerText = "Erro na comunicação com o servidor";
   });
 }
 
