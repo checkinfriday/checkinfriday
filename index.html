@@ -6,7 +6,6 @@
   <title>Check-in de Presença - friday</title>
   <link href="https://fonts.googleapis.com/css2?family=Cal+Sans&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Cabin:wght@400;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.0/dist/confetti.browser.min.js"></script>
   <style>
     * {
       margin: 0;
@@ -32,7 +31,7 @@
     
     header h1 {
       font-family: 'Cal Sans', sans-serif;
-      font-size: 64px;
+      font-size: 48px;
       font-weight: 400;
       color: #BEC14F;
       letter-spacing: 2px;
@@ -53,26 +52,7 @@
       padding: 45px;
       max-width: 420px;
       width: 100%;
-      transition: all 0.3s ease;
-    }
-    
-    .container.pulse {
-      animation: pulse 0.6s ease-out;
-    }
-    
-    @keyframes pulse {
-      0% {
-        transform: scale(1);
-        box-shadow: 0 15px 40px rgba(1, 71, 81, 0.25);
-      }
-      50% {
-        transform: scale(1.05);
-        box-shadow: 0 20px 50px rgba(190, 193, 79, 0.4);
-      }
-      100% {
-        transform: scale(1);
-        box-shadow: 0 15px 40px rgba(1, 71, 81, 0.25);
-      }
+      position: relative;
     }
     
     h2 {
@@ -135,6 +115,8 @@
       text-transform: uppercase;
       letter-spacing: 1px;
       font-family: 'Cabin', sans-serif;
+      position: relative;
+      overflow: hidden;
     }
     
     button:hover {
@@ -147,10 +129,22 @@
       transform: translateY(-1px);
     }
     
-    button:disabled {
-      opacity: 0.7;
-      cursor: not-allowed;
-      transform: none;
+    button:after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 5px;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.5);
+      opacity: 0;
+      border-radius: 100%;
+      transform: scale(1, 1) translate(-50%);
+      transform-origin: 50% 50%;
+    }
+    
+    button:focus:not(:active)::after {
+      animation: ripple 1s ease-out;
     }
     
     #msg {
@@ -159,44 +153,33 @@
       border-radius: 8px;
       text-align: center;
       font-weight: 600;
-      display: none;
       font-size: 14px;
-      animation: slideIn 0.4s ease-out;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      max-height: 0;
+      overflow: hidden;
     }
     
-    @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateY(-10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    #msg.mostrar {
+      opacity: 1;
+      transform: translateY(0);
+      max-height: 200px;
+      display: block;
     }
     
     #msg.sucesso {
       background-color: #d4edda;
       color: #014751;
       border: 2px solid #BEC14F;
-      display: block;
-      animation: slideIn 0.4s ease-out, bounce 0.6s ease-out 0.2s;
-    }
-    
-    @keyframes bounce {
-      0%, 100% {
-        transform: translateY(0);
-      }
-      50% {
-        transform: translateY(-5px);
-      }
+      animation: pulseSuccess 0.5s ease-out;
     }
     
     #msg.erro {
       background-color: #f8d7da;
       color: #014751;
       border: 2px solid #BEC14F;
-      display: block;
+      animation: pulseError 0.5s ease-out;
     }
     
     .loading {
@@ -205,22 +188,60 @@
       font-size: 13px;
       margin-top: 12px;
       font-weight: 600;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: all 0.3s ease;
     }
     
-    .spinner {
-      display: inline-block;
-      width: 12px;
-      height: 12px;
-      border: 2px solid #014751;
-      border-top-color: transparent;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+    .loading.mostrar {
+      opacity: 1;
+      transform: translateY(0);
     }
     
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
+    .loading:after {
+      content: '...';
+      animation: dots 1.5s steps(4, end) infinite;
+    }
+    
+    @keyframes dots {
+      0%, 20% { content: ''; }
+      40% { content: '.'; }
+      60% { content: '..'; }
+      80%, 100% { content: '...'; }
+    }
+    
+    @keyframes ripple {
+      0% {
+        transform: scale(0, 0);
+        opacity: 0.5;
       }
+      100% {
+        transform: scale(40, 40);
+        opacity: 0;
+      }
+    }
+    
+    @keyframes pulseSuccess {
+      0% { transform: scale(0.95); }
+      50% { transform: scale(1.02); }
+      100% { transform: scale(1); }
+    }
+    
+    @keyframes pulseError {
+      0% { transform: translateX(-5px); }
+      25% { transform: translateX(5px); }
+      50% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+      100% { transform: translateX(0); }
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .container {
+      animation: fadeIn 0.6s ease-out;
     }
     
     @media (max-width: 600px) {
@@ -245,7 +266,7 @@
 </header>
 
 <div class="main-content">
-  <div class="container" id="container">
+  <div class="container">
     <h2>Check-in de Presença</h2>
 
     <label for="aluno">Aluno</label>
@@ -261,10 +282,10 @@
       <option value="14:00">14:00</option>
     </select>
 
-    <button id="btnCheckin" onclick="checkin()">Fazer Check-in</button>
+    <button onclick="checkin()">Fazer Check-in</button>
 
     <div id="msg"></div>
-    <div class="loading" id="loading" style="display: none;"><span class="spinner"></span> Enviando...</div>
+    <div class="loading" id="loading">Enviando</div>
   </div>
 </div>
 
@@ -305,17 +326,104 @@
       });
   }
 
-  function lancarConfete() {
-    // Confete com cores da marca
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 },
-      colors: ['#014751', '#BEC14F'],
-      gravity: 0.8,
-      scalar: 1.2,
-      drift: 0
-    });
+  function mostrarMensagem(texto, tipo) {
+    const msgDiv = document.getElementById("msg");
+    msgDiv.textContent = texto;
+    msgDiv.className = tipo + " mostrar";
+    
+    // Se for uma mensagem de sucesso, adiciona animação de confirmação
+    if (tipo === "sucesso") {
+      // Cria um elemento de confirmação animado
+      criarAnimacaoConfirmacao();
+    }
+    
+    // Auto-esconder a mensagem após 5 segundos
+    setTimeout(() => {
+      esconderMensagem();
+    }, 5000);
+  }
+
+  function esconderMensagem() {
+    const msgDiv = document.getElementById("msg");
+    msgDiv.classList.remove("mostrar");
+    setTimeout(() => {
+      msgDiv.textContent = "";
+      msgDiv.className = "";
+    }, 400);
+  }
+
+  function criarAnimacaoConfirmacao() {
+    // Remove animações anteriores se existirem
+    const animacaoAnterior = document.querySelector('.confirmacao-animacao');
+    if (animacaoAnterior) {
+      animacaoAnterior.remove();
+    }
+    
+    // Cria o elemento de animação
+    const animacao = document.createElement('div');
+    animacao.className = 'confirmacao-animacao';
+    animacao.style.cssText = `
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100px;
+      height: 100px;
+      pointer-events: none;
+      z-index: 1000;
+    `;
+    
+    // Cria o elemento SVG do check
+    const svgNS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute("viewBox", "0 0 100 100");
+    svg.style.cssText = `
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 4px 8px rgba(1, 71, 81, 0.3));
+    `;
+    
+    // Cria o círculo de fundo
+    const circle = document.createElementNS(svgNS, "circle");
+    circle.setAttribute("cx", "50");
+    circle.setAttribute("cy", "50");
+    circle.setAttribute("r", "45");
+    circle.setAttribute("fill", "#BEC14F");
+    circle.setAttribute("opacity", "0.9");
+    
+    // Cria o check
+    const path = document.createElementNS(svgNS, "path");
+    path.setAttribute("d", "M30,50 L45,65 L70,35");
+    path.setAttribute("stroke", "#014751");
+    path.setAttribute("stroke-width", "8");
+    path.setAttribute("fill", "none");
+    path.setAttribute("stroke-linecap", "round");
+    path.setAttribute("stroke-linejoin", "round");
+    path.setAttribute("stroke-dasharray", "100");
+    path.setAttribute("stroke-dashoffset", "100");
+    
+    svg.appendChild(circle);
+    svg.appendChild(path);
+    animacao.appendChild(svg);
+    document.querySelector('.container').appendChild(animacao);
+    
+    // Anima o check
+    setTimeout(() => {
+      path.style.transition = "stroke-dashoffset 0.8s ease-out";
+      path.style.strokeDashoffset = "0";
+    }, 100);
+    
+    // Remove a animação após 2 segundos
+    setTimeout(() => {
+      animacao.style.transition = "all 0.5s ease-out";
+      animacao.style.opacity = "0";
+      animacao.style.transform = "translate(-50%, -50%) scale(1.5)";
+      setTimeout(() => {
+        if (animacao.parentNode) {
+          animacao.remove();
+        }
+      }, 500);
+    }, 1500);
   }
 
   function checkin() {
@@ -323,18 +431,17 @@
     const horario = document.getElementById("horario").value;
     const msgDiv = document.getElementById("msg");
     const loading = document.getElementById("loading");
-    const btnCheckin = document.getElementById("btnCheckin");
-    const container = document.getElementById("container");
 
     if (!aluno || !horario) {
-      msgDiv.textContent = "Preencha todos os campos";
-      msgDiv.className = "erro";
+      mostrarMensagem("Preencha todos os campos", "erro");
       return;
     }
 
-    loading.style.display = "block";
-    msgDiv.style.display = "none";
-    btnCheckin.disabled = true;
+    // Esconde qualquer mensagem anterior
+    esconderMensagem();
+    
+    // Mostra loading
+    loading.classList.add("mostrar");
 
     // Requisição POST com application/x-www-form-urlencoded (não requer preflight CORS)
     const params = new URLSearchParams();
@@ -349,34 +456,22 @@
     })
       .then(r => r.json())
       .then(data => {
-        loading.style.display = "none";
-        btnCheckin.disabled = false;
-        
+        loading.classList.remove("mostrar");
         if (data.ok) {
-          // Efeitos visuais de sucesso
-          container.classList.add("pulse");
-          lancarConfete();
-          
-          msgDiv.textContent = "✓ Presença registrada com sucesso!";
-          msgDiv.className = "sucesso";
-          document.getElementById("aluno").value = "";
-          document.getElementById("horario").value = "";
-          
-          // Remove a classe pulse após a animação
+          mostrarMensagem("✓ Presença registrada com sucesso!", "sucesso");
+          // Limpa os campos após sucesso
           setTimeout(() => {
-            container.classList.remove("pulse");
-          }, 600);
+            document.getElementById("aluno").value = "";
+            document.getElementById("horario").value = "";
+          }, 300);
         } else {
-          msgDiv.textContent = "✗ Erro: " + (data.erro || "Erro desconhecido");
-          msgDiv.className = "erro";
+          mostrarMensagem("✗ Erro: " + (data.erro || "Erro desconhecido"), "erro");
         }
       })
       .catch(err => {
-        loading.style.display = "none";
-        btnCheckin.disabled = false;
+        loading.classList.remove("mostrar");
         console.error("Erro na requisição:", err);
-        msgDiv.textContent = "✗ Erro de conexão com o servidor";
-        msgDiv.className = "erro";
+        mostrarMensagem("✗ Erro de conexão com o servidor", "erro");
       });
   }
 
@@ -385,6 +480,16 @@
     if (e.key === "Enter") {
       checkin();
     }
+  });
+
+  // Adiciona feedback visual nos selects quando alterados
+  document.querySelectorAll('select').forEach(select => {
+    select.addEventListener('change', function() {
+      if (this.value) {
+        this.style.borderColor = '#014751';
+        this.style.backgroundColor = '#fff';
+      }
+    });
   });
 </script>
 
